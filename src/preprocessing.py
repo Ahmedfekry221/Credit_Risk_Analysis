@@ -1,9 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import SMOTE
 
 def preprocess_data(file_path):
-    print(" Starting Preprocessing & Scaling...")
+    print(" Starting Preprocessing, Scaling & SMOTE...")
     
     # 1. Load data
     df = pd.read_csv(file_path)
@@ -27,14 +28,18 @@ def preprocess_data(file_path):
     
     # 6. Feature Scaling (Standardization)
     scaler = StandardScaler()
-    # Fit on train data ONLY to prevent data leakage, then transform both train and test
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     
-    # Convert the resulting NumPy arrays back to Pandas DataFrames to keep column names
     X_train_scaled = pd.DataFrame(X_train_scaled, columns=X_train.columns)
     X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns)
     
-    print(" Preprocessing and Scaling completed successfully!")
+    # 7. Apply SMOTE to handle class imbalance (ONLY on training data)
+    print(f" Before SMOTE: Good (1): {sum(y_train==1)}, Bad (0): {sum(y_train==0)}")
+    smote = SMOTE(random_state=42)
+    X_train_balanced, y_train_balanced = smote.fit_resample(X_train_scaled, y_train)
+    print(f" After SMOTE : Good (1): {sum(y_train_balanced==1)}, Bad (0): {sum(y_train_balanced==0)}")
     
-    return X_train_scaled, X_test_scaled, y_train, y_test
+    print(" Preprocessing and SMOTE completed successfully!")
+    
+    return X_train_balanced, X_test_scaled, y_train_balanced, y_test
