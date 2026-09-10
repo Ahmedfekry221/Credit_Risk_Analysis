@@ -1,11 +1,22 @@
+/* --- Reset Vite Defaults --- */
+/* Vite's default #root styling forces margins; this resets it for full-width control */
+#root {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* --- Global Settings --- */
 :root {
   --primary: #0f172a;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
-  --bg: #f1f5f9;
-  --card-bg: #ffffff;
+  --bg: #f8fafc;
   --text: #334155;
   --border: #cbd5e1;
+  --card-bg: #ffffff;
 }
 
 body {
@@ -14,85 +25,109 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scrolling entirely */
 }
 
-.dashboard-container {
-  max-width: 1000px;
-  margin: 40px auto;
-  padding: 0 20px;
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
-.header {
+/* --- Full Screen Layout --- */
+.fullscreen-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Allow vertical expansion on smaller viewports */
+  width: 100%;
+}
+
+/* --- TOP: Header --- */
+.app-header {
   text-align: center;
-  margin-bottom: 30px;
+  background-color: var(--card-bg);
+  padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0; /* Prevent header from shrinking when container flexes */
 }
 
-.header h1 {
-  font-size: 2.2rem;
+.app-header h1 {
+  font-size: 1.8rem;
   color: var(--primary);
-  margin-bottom: 8px;
+  margin: 0 0 4px 0;
   font-weight: 800;
 }
 
-.header p {
+.app-header p {
   color: #64748b;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  margin: 0;
 }
 
-.form-card {
+/* --- BODY: Main Section --- */
+.app-main {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* Perfect horizontal alignment */
+  justify-content: center; /* Perfect vertical alignment */
+  padding: 20px;
+  width: 100%;
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 1200px; /* Optimal max-width for enterprise dashboards */
+  margin: 0 auto;    /* Center the wrapper block on the screen */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- DATA INPUT FORM --- */
+.wide-form {
   background: var(--card-bg);
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-  border: 1px solid #e2e8f0;
-}
-
-.form-card h3 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: var(--primary);
-  border-bottom: 2px solid #f1f5f9;
-  padding-bottom: 12px;
-  font-size: 1.25rem;
-  font-weight: 700;
+  padding: 25px 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  width: 100%;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr); /* Enforce a strict 4-column layout */
+  gap: 15px 20px;
 }
 
-.input-group {
+.input-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
-.input-group label {
-  font-size: 0.875rem;
+.input-field label {
+  font-size: 0.85rem;
   font-weight: 600;
   color: #475569;
 }
 
-.input-group input,
-.input-group select {
-  padding: 12px 14px;
+.input-field input,
+.input-field select {
+  padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 0.95rem;
   outline: none;
   background-color: #fff;
   transition: all 0.2s ease;
 }
 
-.input-group input:focus,
-.input-group select:focus {
+.input-field input:focus,
+.input-field select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Hide number arrow spinners */
+/* Hide HTML Number Spinners */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -102,104 +137,125 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+/* Submit Button */
 .submit-btn {
-  margin-top: 35px;
+  margin-top: 25px;
+  padding: 12px;
   width: 100%;
-  padding: 16px;
   background: var(--accent);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1.05rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transition: background 0.2s ease;
 }
 
 .submit-btn:hover {
   background: var(--accent-hover);
 }
 
-.submit-btn:active {
-  transform: scale(0.99);
+/* --- RESULT BANNER (Horizontal Strip) --- */
+.result-banner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 35px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  animation: slideIn 0.3s ease-out;
 }
 
-.result-card {
-  margin-top: 35px;
-  padding: 30px;
-  border-radius: 20px;
-  text-align: center;
-  position: relative;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  animation: slideUp 0.3s ease-in-out;
-}
-
-.status-good {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+.banner-good {
+  background: #f0fdf4;
   border: 1px solid #bbf7d0;
   color: #166534;
 }
 
-.status-bad {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+.banner-bad {
+  background: #fef2f2;
   border: 1px solid #fecaca;
   color: #991b1b;
 }
 
+.result-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.result-info h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
 .badge {
-  display: inline-block;
-  padding: 6px 16px;
-  border-radius: 30px;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
 }
 
-.status-good .badge {
-  background: #15803d;
-  color: white;
-}
+.banner-good .badge { background: #15803d; color: white; }
+.banner-bad .badge { background: #b91c1c; color: white; }
 
-.status-bad .badge {
-  background: #b91c1c;
-  color: white;
-}
-
-.result-card h2 {
-  margin: 5px 0 20px 0;
-  font-size: 1.8rem;
-}
-
-.metrics {
+.result-metrics {
   display: flex;
-  justify-content: center;
   gap: 40px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.metric-box {
+.metric {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  text-align: right;
 }
 
-.metric-box small {
+.metric small {
   font-size: 0.85rem;
   opacity: 0.8;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.metric-box strong {
-  font-size: 1.4rem;
-  font-weight: 700;
+.metric strong {
+  font-size: 1.5rem;
+  font-weight: 800;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(15px); }
+/* --- FOOTER --- */
+.app-footer {
+  text-align: center;
+  padding: 12px;
+  background-color: var(--card-bg);
+  border-top: 1px solid #e2e8f0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  flex-shrink: 0; /* Keep the footer anchored at the bottom */
+}
+
+/* --- Responsive Design --- */
+/* Adjust grid and banner layouts for tablet and mobile devices */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .result-banner {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  .result-metrics {
+    justify-content: center;
+  }
+  .metric {
+    text-align: center;
+  }
+}
+
+/* Entry animation for the result banner */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
