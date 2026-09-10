@@ -102,8 +102,3 @@ Credit_Risk_Project/
 │   └── package.json
 ├── main.py                  # Pipeline execution script
 └── requirements.txt         # Python dependencies
-```text
-
-## Author
-**Ahmed Fekry**  
-*Computer Science & Data Science Graduate - Alexandria University*
