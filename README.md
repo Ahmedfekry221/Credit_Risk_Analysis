@@ -79,8 +79,7 @@ The user interface was designed to simulate a real-world **Internal Banking ERP 
 | **Version Control** | Git & GitHub |
 
 ---
-
-##  Project Structure
+## Project Structure
 
 ```text
 Credit_Risk_Project/
@@ -103,6 +102,7 @@ Credit_Risk_Project/
 │   └── package.json
 ├── main.py                  # Pipeline execution script
 └── requirements.txt         # Python dependencies
+```text
 
 ## Author
 **Ahmed Fekry**  
