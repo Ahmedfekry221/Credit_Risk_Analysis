@@ -1,74 +1,80 @@
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
 
 app = FastAPI(
     title="Credit Risk Prediction API",
-    description="API for evaluating bank loans using Logistic Regression.",
-    version="1.0"
+    description="API for evaluating bank loans using Logistic Regression trained on UCI German Credit Data.",
+    version="2.0"
 )
 
-# 1. Load the saved model and scaler (Loaded once when server starts)
-try:
-    scaler = joblib.load('models/scaler.pkl')
-    model = joblib.load('models/logistic_model.pkl')
-    # Extract the exact 48 feature names the model was trained on
-    expected_columns = scaler.feature_names_in_
-except Exception as e:
-    print(f"Error loading models: {e}")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# 2. Define the expected incoming data structure from React
+# Load saved artifacts
+scaler = joblib.load('models/scaler.pkl')
+model = joblib.load('models/logistic_model.pkl')
+expected_columns = list(scaler.feature_names_in_)
+
 class CustomerData(BaseModel):
     data: Dict[str, Any]
 
-    # Providing a default example for Swagger UI
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "data": {
-                    "Age": 30,
-                    "Sex": "male",
-                    "Job": 2,
-                    "Housing": "own",
-                    "Saving accounts": "little",
-                    "Checking account": "moderate",
-                    "Credit amount": 2500,
-                    "Duration": 12,
-                    "Purpose": "radio/TV"
-                }
-            }
-        }
-
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Credit Risk API! 🚀 Server is running."}
+    return {"message": "Server is running smoothly! 🚀"}
 
-# 3. The Prediction Endpoint
 @app.post("/predict")
 def predict_risk(customer: CustomerData):
     try:
-        # A. Convert incoming JSON from React to a Pandas DataFrame (1 row)
-        df = pd.DataFrame([customer.data])
+        raw_data = customer.data
         
-        # B. Apply One-Hot Encoding to categorical columns
-        categorical_cols = df.select_dtypes(include=['object', 'string']).columns
-        df_encoded = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
-        
-        # C. Align columns with training data (Fill missing dummy columns with 0)
-        df_aligned = df_encoded.reindex(columns=expected_columns, fill_value=0)
-        
-        # D. Scale the features using the saved scaler
+        # 1. Start with a zeroed dataframe matching EXACT training columns
+        df_aligned = pd.DataFrame(0, index=[0], columns=expected_columns)
+
+        # 2. Map Numerical Features (Case-sensitive matching)
+        # Note: Handling lower/upper case potential variations
+        num_mapping = {
+            'duration': ['duration', 'Duration', 'duration_in_month'],
+            'credit_amount': ['credit_amount', 'Credit amount', 'credit_amount_val'],
+            'installment_commitment': ['installment_commitment', 'installment_rate'],
+            'present_residence': ['present_residence', 'residence_since'],
+            'age': ['age', 'Age'],
+            'existing_credits': ['existing_credits', 'number_credits'],
+            'num_dependents': ['num_dependents', 'people_liable']
+        }
+
+        for model_col, possible_keys in num_mapping.items():
+            for key in possible_keys:
+                if key in raw_data:
+                    if model_col in df_aligned.columns:
+                        df_aligned[model_col] = float(raw_data[key])
+                    break
+
+        # 3. Map Categorical Features to One-Hot Columns manually
+        # Format in train: FeatureName_Value (e.g. checking_status_<0, housing_own)
+        for feature, val in raw_data.items():
+            if isinstance(val, str):
+                column_name = f"{feature}_{val}"
+                if column_name in df_aligned.columns:
+                    df_aligned[column_name] = 1
+
+        # 4. Scale features
         X_scaled = scaler.transform(df_aligned)
-        
-        # E. Make the Prediction
+
+        # 5. Model Inference
         prediction = int(model.predict(X_scaled)[0])
         probability = model.predict_proba(X_scaled)[0]
-        
-        # F. Return the response
-        result = "Good Credit Risk ✅" if prediction == 1 else "Bad Credit Risk ❌ (High Default Probability)"
-        
+
+        result = "Good Credit Risk " if prediction == 1 else "Bad Credit Risk ❌"
+
         return {
             "status": "success",
             "prediction_label": result,
@@ -76,6 +82,6 @@ def predict_risk(customer: CustomerData):
             "confidence_good": f"{probability[1] * 100:.2f}%",
             "confidence_bad": f"{probability[0] * 100:.2f}%"
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Prediction Error: {str(e)}")
